@@ -41,38 +41,71 @@ const profiles = {
     ],
   },
 };
-const tracks = [
-  [
-    "01",
-    "Carry On Wayward Son",
-    "Kansas",
-    "https://open.spotify.com/search/Carry%20On%20Wayward%20Son%20Kansas",
-  ],
-  [
-    "02",
-    "Back in Black",
-    "AC/DC",
-    "https://open.spotify.com/search/Back%20in%20Black%20ACDC",
-  ],
-  ["03", "Renegade", "Styx", "https://open.spotify.com/search/Renegade%20Styx"],
-  [
-    "04",
-    "Heat of the Moment",
-    "Asia",
-    "https://open.spotify.com/search/Heat%20of%20the%20Moment%20Asia",
-  ],
-  [
-    "05",
-    "Wanted Dead or Alive",
-    "Bon Jovi",
-    "https://open.spotify.com/search/Wanted%20Dead%20or%20Alive%20Bon%20Jovi",
-  ],
-  [
-    "06",
-    "Ramble On",
-    "Led Zeppelin",
-    "https://open.spotify.com/search/Ramble%20On%20Led%20Zeppelin",
-  ],
+type Track = {
+  number: string;
+  title: string;
+  artist: string;
+  videoId: string;
+  start: number;
+  end: number;
+  note: string;
+};
+
+const tracks: Track[] = [
+  {
+    number: "01",
+    title: "Carry On Wayward Son",
+    artist: "Kansas",
+    videoId: "P5ZJui3aPoQ",
+    start: 0,
+    end: 60,
+    note: "For finales, long drives, and pretending feelings are just road noise.",
+  },
+  {
+    number: "02",
+    title: "Back in Black",
+    artist: "AC/DC",
+    videoId: "pAgnJDJN4VA",
+    start: 0,
+    end: 60,
+    note: "The soundtrack to walking away from an explosion you definitely caused.",
+  },
+  {
+    number: "03",
+    title: "Renegade",
+    artist: "Styx",
+    videoId: "ZXhuso4OTG4",
+    start: 0,
+    end: 60,
+    note: "Best deployed while escaping federal custody. Again.",
+  },
+  {
+    number: "04",
+    title: "Heat of the Moment",
+    artist: "Asia",
+    videoId: "lCALGlGuVUA",
+    start: 0,
+    end: 60,
+    note: "Tuesday's anthem. Do not ask how many Tuesdays.",
+  },
+  {
+    number: "05",
+    title: "Wanted Dead or Alive",
+    artist: "Bon Jovi",
+    videoId: "SRvCvsRp5ho",
+    start: 0,
+    end: 60,
+    note: "A little on the nose when your aliases are on six wanted posters.",
+  },
+  {
+    number: "06",
+    title: "Ramble On",
+    artist: "Led Zeppelin",
+    videoId: "LzGBQerkvWs",
+    start: 0,
+    end: 60,
+    note: "Sam calls it Tolkien research. Dean calls it driving music.",
+  },
 ];
 const cases = [
   "VAMPIRE NEST — bring machetes, not monologues.",
@@ -301,11 +334,11 @@ const caseFiles = [
 export default function Home() {
   const [menu, setMenu] = useState(false),
     [active, setActive] = useState<"dean" | "sam">("dean"),
-    [playing, setPlaying] = useState(false),
     [caseNo, setCaseNo] = useState(0),
     [openCase, setOpenCase] = useState<number | null>(0),
     [casePage, setCasePage] = useState(0),
-    [tape, setTape] = useState(0),
+    [selectedTrack, setSelectedTrack] = useState<number | null>(null),
+    [playerError, setPlayerError] = useState(false),
     [introNote, setIntroNote] = useState(0);
   useEffect(() => {
     const els = document.querySelectorAll("[data-reveal]");
@@ -323,6 +356,11 @@ export default function Home() {
     setCasePage(page);
     setOpenCase(page * 4);
   };
+  const chooseTrack = (index: number) => {
+    setSelectedTrack(index);
+    setPlayerError(false);
+  };
+  const featuredTrack = selectedTrack === null ? null : tracks[selectedTrack];
   return (
     <main id="top">
       <header>
@@ -350,7 +388,7 @@ export default function Home() {
       </header>
       <section className="hero">
         <img
-          src="https://w-dog.ru/wallpapers/6/16/450544589287577/sverxestestvennoe-dzhensen-ekls-din-vinchester-dzhared-padaleki-sem-vinchester.jpg"
+          src={`${import.meta.env.BASE_URL}images/winchester-hero.jpg`}
           alt="Dean and Sam Winchester showing their FBI badges"
         />
         <div className="hero-shade" />
@@ -607,16 +645,24 @@ export default function Home() {
                       <div className="case-report">
                         <span>FIELD REPORT / J.W.</span>
                         <p>{c.summary}</p>
-                        <small>ENTRY {c.id} — TRANSCRIBED FROM THE FAMILY ARCHIVE</small>
+                        <small>
+                          ENTRY {c.id} — TRANSCRIBED FROM THE FAMILY ARCHIVE
+                        </small>
                       </div>
                       <div className="entity-sketch" aria-hidden="true">
-                        <div className="sigil"><i /><i /><i /></div>
+                        <div className="sigil">
+                          <i />
+                          <i />
+                          <i />
+                        </div>
                         <b>{c.entity}</b>
                         <span>ENTITY / CONFIRMED</span>
                       </div>
                       <div className="evidence-strip">
                         <b>EVIDENCE BAG</b>
-                        <span>01 / EMF SPIKE</span><span>02 / WITNESS ACCOUNT</span><span>03 / LORE MATCH</span>
+                        <span>01 / EMF SPIKE</span>
+                        <span>02 / WITNESS ACCOUNT</span>
+                        <span>03 / LORE MATCH</span>
                       </div>
                       <div className="disposal-note">
                         <span>METHOD OF DISPOSAL</span>
@@ -660,86 +706,85 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mixtape" id="mixtape">
-        <div className="tape-head" data-reveal>
-          <p>DEAN'S CASSETTE / VOL. 01</p>
+      <section className="road-mix" id="mixtape">
+        <div className="mix-feature" data-reveal>
+          <p>DEAN'S ROAD MIX / DRIVER'S LOG</p>
           <h2>
             DRIVER PICKS
             <br />
             <i>THE MUSIC.</i>
           </h2>
-          <div
-            className={`cassette ${playing ? "spinning" : ""}`}
-            role="button"
-            tabIndex={0}
-            onClick={() => setPlaying(!playing)}
-            onKeyDown={(e) =>
-              (e.key === "Enter" || e.key === " ") && setPlaying(!playing)
-            }
-            aria-label={playing ? "Pause cassette" : "Play cassette"}
-          >
-            <div className="tape-label">
-              <span>WINCHESTER ROAD MIX</span>
-              <strong>{tracks[tape][1]}</strong>
-              <em>{tracks[tape][2]}</em>
-            </div>
-            <div className="tape-window">
-              <i />
-              <i />
-            </div>
-            <div className="tape-screws">• &nbsp; • &nbsp; • &nbsp; •</div>
+          <div className="radio-display" aria-live="polite">
+            {featuredTrack ? (
+              <>
+                <span>NOW SELECTED / TRACK {featuredTrack.number}</span>
+                <strong>{featuredTrack.title}</strong>
+                <em>{featuredTrack.artist}</em>
+                <p>DEAN'S NOTE: {featuredTrack.note}</p>
+                <small>
+                  PREVIEW WINDOW / {featuredTrack.start}s—{featuredTrack.end}s
+                </small>
+              </>
+            ) : (
+              <p className="mix-empty">SELECT A TRACK TO START THE ROAD MIX</p>
+            )}
           </div>
-          <div className="tape-controls">
-            <button
-              onClick={() =>
-                setTape((tape - 1 + tracks.length) % tracks.length)
-              }
-            >
-              ← PREV
-            </button>
-            <button onClick={() => setPlaying(!playing)}>
-              {playing ? "Ⅱ PAUSE" : "▶ PLAY"}
-            </button>
-            <button onClick={() => setTape((tape + 1) % tracks.length)}>
-              NEXT →
-            </button>
-          </div>
-          <div
-            className={`equalizer ${playing ? "playing" : ""}`}
-            aria-hidden="true"
-          >
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <i key={n} />
-            ))}
+          <div className="video-preview">
+            {featuredTrack && !playerError ? (
+              <iframe
+                key={featuredTrack.videoId}
+                src={`https://www.youtube-nocookie.com/embed/${featuredTrack.videoId}?start=${featuredTrack.start}&end=${featuredTrack.end}&rel=0`}
+                title={`${featuredTrack.title} by ${featuredTrack.artist} YouTube preview`}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                onError={() => setPlayerError(true)}
+              />
+            ) : featuredTrack ? (
+              <p>PREVIEW UNAVAILABLE — OPEN THE FULL SONG ON YOUTUBE</p>
+            ) : (
+              <p>RADIO STANDBY / NO SIGNAL SELECTED</p>
+            )}
           </div>
         </div>
-        <div className="tracks">
+        <div className="road-tracks" aria-label="Dean's road mix track list">
+          <div className="track-list-head">
+            <span>NO.</span>
+            <span>TRACK / ARTIST</span>
+            <span>ACTIONS</span>
+          </div>
           {tracks.map((t, i) => (
-            <button
-              className={tape === i ? "selected" : ""}
-              onClick={() => {
-                setTape(i);
-                setPlaying(true);
-              }}
-              key={t[0]}
+            <article
+              className={selectedTrack === i ? "selected" : ""}
+              key={t.number}
             >
-              <span>{t[0]}</span>
-              <strong>{t[1]}</strong>
-              <em>{t[2]}</em>
-              <a
-                href={t[3]}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                aria-label={`Open ${t[1]} in Spotify`}
-              >
-                ↗
-              </a>
-            </button>
+              <span className="track-number">{t.number}</span>
+              <div>
+                <strong>{t.title}</strong>
+                <em>{t.artist}</em>
+              </div>
+              <div className="track-actions">
+                <button
+                  onClick={() => chooseTrack(i)}
+                  aria-pressed={selectedTrack === i}
+                  aria-label={`Preview ${t.title} by ${t.artist}`}
+                >
+                  PREVIEW
+                </button>
+                <a
+                  href={`https://www.youtube.com/watch?v=${t.videoId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Open full song ${t.title} by ${t.artist} on YouTube`}
+                >
+                  OPEN ↗
+                </a>
+              </div>
+            </article>
           ))}
           <p>
-            The cassette and reels are interactive. Spotify links open the real
-            tracks—because licensing demons remain undefeated.
+            Official YouTube previews load one at a time. Playback availability
+            depends on YouTube and your connection—licensing demons remain
+            undefeated.
           </p>
         </div>
       </section>
@@ -833,20 +878,20 @@ export default function Home() {
           >
             Season 1 Sam promotional portrait ↗
           </a>
-        <a
-          href="https://nerdist.com/article/going-under-the-hood-of-supernaturals-impala/"
+          <a
+            href="https://nerdist.com/article/going-under-the-hood-of-supernaturals-impala/"
             target="_blank"
             rel="noreferrer"
           >
-          Nerdist — Impala feature ↗
-        </a>
-        <a
-          href="https://www.tvguide.com/news/supernatural-season-15-guide-cw/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          TV Guide — Winchester brothers photo ↗
-        </a>
+            Nerdist — Impala feature ↗
+          </a>
+          <a
+            href="https://www.tvguide.com/news/supernatural-season-15-guide-cw/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            TV Guide — Winchester brothers photo ↗
+          </a>
         </div>
       </section>
       <footer>
